@@ -107,3 +107,55 @@ contract ERC1155_approval is Test, ERC1155_transfer {
     }
 }
 
+
+contract ERC1155_Receiving is ERC1155_approval {
+    ERC1155_Accepting_Receiver receiver;
+    ERC1155_Non_Accepting_Receiver notReceiver;
+    function setUp() public virtual override {
+        super.setUp();
+        receiver = new ERC1155_Accepting_Receiver();
+        notReceiver = new ERC1155_Non_Accepting_Receiver();
+    }
+
+    function test_supported_receiver_singleTransfer() public {
+        vm.prank(bob);
+        erc1155.safeTransferFrom(bob, address(receiver), 0, 1, abi.encodeWithSelector(bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))));
+    }
+
+    function test_unsupported_receiver_singleTransfer() public {
+        vm.prank(bob);
+        vm.expectRevert(bytes(""));
+        erc1155.safeTransferFrom(bob, address(notReceiver), 0, 1, abi.encodeWithSelector(bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))));
+    }
+
+    function test_supported_receiver_batchTransfer() public {
+        erc1155.mint(bob,1);
+        
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = 0;
+        ids[1] = 1;
+
+        uint256[] memory quants = new uint256[](2);
+        quants[0] = 1;
+        quants[1] = 1;
+        vm.prank(bob);
+        erc1155.safeBatchTransferFrom(bob, address(receiver), ids, quants, abi.encodeWithSelector(bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))));
+        
+    }
+
+    function test_unsupported_receiver_batchTransfer() public {
+        erc1155.mint(bob,1);
+        
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = 0;
+        ids[1] = 1;
+
+        uint256[] memory quants = new uint256[](2);
+        quants[0] = 1;
+        quants[1] = 1;
+
+        vm.expectRevert(bytes(""));
+        vm.prank(bob);
+        erc1155.safeBatchTransferFrom(bob, address(notReceiver), ids, quants, abi.encodeWithSelector(bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))));
+    }
+}
