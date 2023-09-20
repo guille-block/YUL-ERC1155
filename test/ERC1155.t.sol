@@ -82,3 +82,28 @@ contract ERC1155_transfer is Test, ERC1155_deploy, ERC1155_events {
     }
 }
 
+
+contract ERC1155_approval is Test, ERC1155_transfer {
+
+    function setUp() public virtual override {
+        super.setUp();
+    }
+
+    function test_approval() public {
+        vm.expectEmit(true, true, true, true);
+        vm.prank(bob);
+        emit ApprovalForAll(bob, alice, true);
+        erc1155.setApprovalForAll(alice, true);
+        assertEq(erc1155.isApprovedForAll(bob, alice), true);
+    }
+
+    function test_transfer_on_approval() public {
+        vm.prank(bob);
+        erc1155.setApprovalForAll(alice, true);
+        vm.prank(alice);
+        erc1155.safeTransferFrom(bob, alice, 0, 1, "");
+        assertEq(erc1155.balanceOf(bob, 0), 0);
+        assertEq(erc1155.balanceOf(alice, 0), 1);
+    }
+}
+
