@@ -108,7 +108,7 @@ contract ERC1155_approval is Test, ERC1155_transfer {
 }
 
 
-contract ERC1155_Receiving is ERC1155_approval {
+contract ERC1155_FullSuitTest is ERC1155_approval {
     ERC1155_Accepting_Receiver receiver;
     ERC1155_Non_Accepting_Receiver notReceiver;
     function setUp() public virtual override {
